@@ -11,8 +11,13 @@ public class MiningServer {
 
     //LISTA PARA SABER LOS CLIENTES CONECTADOS
     private final List<ClienteHandler> clientes = new CopyOnWriteArrayList<>();
+    private String bloque;
 
-    public String generarPaqueteAleatorio(int cantidadTransaccines) {
+    public MiningServer(String bloqueAleatorio) {
+        this.bloque = bloqueAleatorio;
+    }
+
+    public static String generarPaqueteAleatorio(int cantidadTransaccines) {
         String[] usuarios = {"Pedro", "Juan", "Felipe", "Ana", "Maria"};
         Random aleatorio = new Random();
         StringBuilder paquete = new StringBuilder();
@@ -38,14 +43,12 @@ public class MiningServer {
         return paquete.toString();
     }
 
-    public void enviarTrabajo () {
-        String bloque = generarPaqueteAleatorio(3);
-        System.out.println("Repartiendo bloque: " + bloque);
 
+    public void enviarTrabajoGlobal () {
+        System.out.println("Repartiendo bloque: " + bloque);
         for (ClienteHandler cliente : clientes) {
             cliente.enviarMensaje("new_request" + bloque);
         }
-
     }
 
     public void añadirALista(ClienteHandler h) {
@@ -57,9 +60,16 @@ public class MiningServer {
     }
 
 
+    public void enviarTrabajoACliente(ClienteHandler cliente) {
+        System.out.println("Enviando bloque al nuevo cliente...");
+        cliente.enviarMensaje("new_request" + bloque);
+    }
+
     public static void main(String[] args) {
         System.out.println("Servidor de minería iniciado...");
-        MiningServer server = new MiningServer();
+        String bloque = generarPaqueteAleatorio(3);
+
+        MiningServer server = new MiningServer(bloque);
 
         int port = 6666;
         try (ServerSocket serverSocket = new ServerSocket(port)) {
@@ -69,13 +79,12 @@ public class MiningServer {
 
                 Socket socketCliente = serverSocket.accept();
                 System.out.println("Añadiendo cliente...");
-
                 ClienteHandler handler = new ClienteHandler(socketCliente, server);
+
                 //COMO ESTE OBJETO ES RUNNAMBLE PODEMOS LANZARLO CON START (NUEVO HILO)
                 new Thread(handler).start();
                 System.out.println("Cliente añadido");
-
-                server.enviarTrabajo();
+                server.enviarTrabajoACliente(handler);
             }
 
         }  catch (IOException e) {

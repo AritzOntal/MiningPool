@@ -1,5 +1,7 @@
 package client;
 
+import common.Hasher;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,29 +34,37 @@ public class MiningClient {
 
             System.out.println("Conectado al servidor.");
 
-    //ENVIAMOS MENSAJE CLAVE CONNECT
+    //ENVIAMOS MENSAJE CLAVE CONNECT (DICIENDO QUE ESTOY LISTO)
             out.println("connect");
-            System.out.println("Mensaje 'connect' enviado. Esperando respuesta...");
+            System.out.println("Saludo enviado. Esperando respuesta...");
 
-            //LEEMOS LA RESPUESTA (Debería ser "ack")
+            //ESPERAMOS LA RESPUESTA DESPUÉS DE PEDIR CONEXIÓN (Debería ser "ack")
             String respuesta = in.readLine();
             if ("ack".equals(respuesta)) {
                 System.out.println("¡Servidor nos ha aceptado! (Recibido: " + respuesta + ")");
 
-                // Aquí es donde el cliente se queda esperando el "new_request"
-                while (true) {
-                    System.out.println("Esperando tarea de minería...");
-                    String tarea = in.readLine(); // El hilo se queda aquí parado esperando al servidor
+                System.out.println("Esperando tarea de minería...");
+                String tarea = in.readLine();
+                //AQUI ESPERAMOS A LA REQUEST DEL SERVIDOR
 
-                    if (tarea != null && tarea.startsWith("new_request")) {
-                        System.out.println("¡Tarea recibida!: " + tarea);
-                        // TODO LLAMAR A ALGO QUE EMPIECE A MINAR LA TAREA.
+                if (tarea != null && tarea.startsWith("new_request")) {
+                    String bloque = tarea.replaceFirst("new_request", "");
+                    System.out.println("¡Tarea recibida!: " + bloque);
+                    long nonce = 0;
+
+                    while (true) {
+                        String hash = Hasher.calculateMD5(bloque + nonce);
+
+                        if(hash.startsWith("00")){
+                            System.out.println("¡HASH ENCONTRADA! NONCE: " + nonce);
+                            out.println("sol;" + nonce);
+                            System.out.println(hash);
+                            break;
+                        }
+                        nonce++;
                     }
                 }
-            } else {
-                System.out.println("El servidor respondió algo inesperado: " + respuesta);
             }
-
         } catch (IOException e) {
             System.out.println("Error en la conexión: " + e.getMessage());
         }

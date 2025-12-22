@@ -14,10 +14,11 @@ public class ClienteHandler implements Runnable {
         this.servidor = servidor;
     }
 
-    //EL MÉTODO QUE USARÁ EL SERVIDOR PARA ENVIARLE COSAS AL CLIENTE
+    //EL MÉTODO QUE USARÁ EL SERVIDOR PARA ENVIARLE MENSJAES AL CLIENTE
     public void enviarMensaje(String texto) {
         if (out != null) {
             out.println(texto);
+            out.flush();
         }
     }
 
@@ -30,16 +31,20 @@ public class ClienteHandler implements Runnable {
 
             // ESPERAMOS AL "CONNECT" DEL CLIENTE
             String msg = in.readLine();
-            if ("connect".equals(msg)) {
+            if (msg != null && msg.equalsIgnoreCase("connect")) {
                 //ME PASO A MI MISMO PARA AÑADIRME A LA LISTA
                 servidor.añadirALista(this);
                 enviarMensaje("ack"); // Respondemos confirmación
                 System.out.println("Cliente validado y añadido a la lista.");
 
+            //AHORA QUE TENGO EL CLIENTE GUARDADO Y ESTOY LISTO ENVIO TRABAJO AL CLIENTE
+                servidor.enviarTrabajoACliente(this);
+
                 //EL HILO MANIENE LA CONEXIÓN Y ESPERA MÁS MENSAJES (mientras haya flujo de mensajes)
                 while ((msg = in.readLine()) != null) {
+
+                    //AQUÍ RECIBIREMOS LA SOLUCIÓN "sol"
                     System.out.println("Mensaje del cliente: " + msg);
-                    //AQUÍ RECIBIRÍAMOS LA SOLUCIÓN "sol"
                 }
             }
 
