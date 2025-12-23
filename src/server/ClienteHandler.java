@@ -24,7 +24,6 @@ public class ClienteHandler implements Runnable {
 
     @Override
     public void run() {
-
         //CREAMOS CANALES DE ENTRADA Y SALIDA (IN Y OUT).
         try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
             this.out = new PrintWriter(socket.getOutputStream(), true);
@@ -42,9 +41,13 @@ public class ClienteHandler implements Runnable {
 
                 //EL HILO MANIENE LA CONEXIÓN Y ESPERA MÁS MENSAJES (mientras haya flujo de mensajes)
                 while ((msg = in.readLine()) != null) {
-
                     //AQUÍ RECIBIREMOS LA SOLUCIÓN "sol"
                     System.out.println("Mensaje del cliente: " + msg);
+
+                    if (msg != null && msg.startsWith("sol")) {
+                    servidor.enviarBroadcast();
+
+                    }
                 }
             }
 

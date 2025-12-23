@@ -44,10 +44,10 @@ public class MiningServer {
     }
 
 
-    public void enviarTrabajoGlobal () {
-        System.out.println("Repartiendo bloque: " + bloque);
+    public void enviarBroadcast() {
+        System.out.println("Deteniendo clientes...");
         for (ClienteHandler cliente : clientes) {
-            cliente.enviarMensaje("new_request" + bloque);
+            cliente.enviarMensaje("stop");
         }
     }
 
