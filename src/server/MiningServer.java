@@ -1,5 +1,8 @@
 package server;
 
+import common.Hasher;
+import util.LogUtil;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -44,11 +47,21 @@ public class MiningServer {
     }
 
 
-    public void enviarBroadcast() {
-        System.out.println("Deteniendo clientes...");
-        for (ClienteHandler cliente : clientes) {
-            cliente.enviarMensaje("stop");
+    public void enviarBroadcast(String nonce, String hash) {
+        String clienHash = verificarHash(bloque + nonce);
+        System.out.println("Comprobando hash...");
+        if (clienHash.startsWith("000000")) {
+            System.out.println("Hash correcto. Deteniendo clientes...");
+            for (ClienteHandler cliente : clientes) {
+                cliente.enviarMensaje("stop");
+            }
+            LogUtil.logServer("clientes detenidos");
         }
+    }
+
+    public String verificarHash(String bloqueWithNonce){
+        String hash = Hasher.calculateMD5(bloqueWithNonce);
+        return hash;
     }
 
     public void añadirALista(ClienteHandler h) {
@@ -61,7 +74,6 @@ public class MiningServer {
 
 
     public void enviarTrabajoACliente(ClienteHandler cliente) {
-        System.out.println("Enviando bloque al nuevo cliente...");
         cliente.enviarMensaje("new_request" + bloque);
     }
 
@@ -83,7 +95,7 @@ public class MiningServer {
 
                 //COMO ESTE OBJETO ES RUNNAMBLE PODEMOS LANZARLO CON START (NUEVO HILO)
                 new Thread(handler).start();
-                System.out.println("Cliente añadido");
+                System.out.println("Cliente validado y añadido a la lista");
                 server.enviarTrabajoACliente(handler);
             }
 

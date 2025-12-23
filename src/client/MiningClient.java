@@ -69,7 +69,7 @@ public class MiningClient {
                     if (msg != null && msg.startsWith("new_request")) {
                         String bloque = msg.replaceFirst("new_request", "");
 
-                        LogUtil.log("¡Tarea recibida!: " + bloque);
+                        LogUtil.logClients("¡Tarea recibida!: " + bloque);
 
                         seguirMinando = true;
                         new Thread(() -> minar(bloque, out)).start();
@@ -90,12 +90,12 @@ public class MiningClient {
             String hash = Hasher.calculateMD5(bloque + nonce);
 
             if (hash.startsWith("000000")) {
-                LogUtil.log("¡HASH ENCONTRADA! NONCE: " + nonce);
-                out.println("sol;" + nonce);
+                LogUtil.logClients("¡HASH ENCONTRADA! NONCE: " + nonce);
+                out.println("sol;" + nonce + ";" + hash);
                 break;
             }
             nonce++;
         }
-        LogUtil.log("Hilo de minería detenido.");
+        LogUtil.logClients("Hilo de minería detenido.");
     }
 }
