@@ -1,7 +1,5 @@
 package server;
 
-import util.LogUtil;
-
 import java.io.*;
 import java.net.Socket;
 
@@ -19,7 +17,6 @@ public class ClienteHandler implements Runnable {
     //EL MÉTODO QUE USARÁ EL SERVIDOR PARA ENVIARLE MENSJAES AL CLIENTE
     public void enviarMensaje(String texto) {
         if (out != null) {
-            LogUtil.logServer("Enviando bloque al nuevo cliente...");
             out.println(texto);
             out.flush();
         }
@@ -35,9 +32,8 @@ public class ClienteHandler implements Runnable {
             String msg = in.readLine();
             if (msg != null && msg.equalsIgnoreCase("connect")) {
                 //ME PASO A MI MISMO PARA AÑADIRME A LA LISTA
-                servidor.añadirALista(this);
                 enviarMensaje("ack"); // Respondemos confirmación
-
+                servidor.anadirALista(this);
                 //AHORA QUE TENGO EL CLIENTE GUARDADO Y ESTOY LISTO ENVIO TRABAJO AL CLIENTE
                 servidor.enviarTrabajoACliente(this);
 
@@ -54,6 +50,9 @@ public class ClienteHandler implements Runnable {
                             System.out.println("Nonce del cliente: " + nonce);
                             servidor.enviarBroadcast(nonce, hash);
                         }
+                    }
+                    if (msg != null && msg.equalsIgnoreCase("disconnect")) {
+                        servidor.eliminarDeLista(this);
                     }
                 }
             }

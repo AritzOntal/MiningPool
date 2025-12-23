@@ -11,6 +11,9 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class MiningClient {
+
+    private Socket socket;
+
     public static void main(String[] args) {
         String host = "localhost";
         int port = 6666;
@@ -29,20 +32,13 @@ public class MiningClient {
             while (true) {
                 String comando = sc.nextLine();
                 if (comando.equalsIgnoreCase("salir")) {
-                    miningClient.desconectar();
+                    miningClient.desconectarServidor();
                     System.exit(0);
                 }
             }
-        } else {
-            return;
         }
     }
 
-
-    public void desconectar() {
-
-
-    }
 
     private volatile boolean seguirMinando = true;
 
@@ -52,6 +48,7 @@ public class MiningClient {
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
             System.out.println("Conectando con servidor...");
+            this.socket = socket;
 
             //PEDIMOS CONECATAR (DICIENDO QUE ESTOY LISTO)
             out.println("connect");
@@ -60,11 +57,11 @@ public class MiningClient {
             String respuesta = in.readLine();
 
             if ("ack".equals(respuesta)) {
-                System.out.println("¡EL servidor nos ha aceptado!("+respuesta+")");
+                System.out.println("¡EL servidor nos ha aceptado!(" + respuesta + ")");
                 System.out.println("Esperando tarea de minería...");
                 //AQUI ABRIMOS UN BLUCLE PARA QUE SE QUEDE ESCUCHANDO INFINITAMENTE
                 String msg;
-                    while ((msg = in.readLine()) != null) {
+                while ((msg = in.readLine()) != null) {
                     //ESPERAMOS MENSAJES
                     if (msg != null && msg.startsWith("new_request")) {
                         String bloque = msg.replaceFirst("new_request", "");
@@ -73,16 +70,25 @@ public class MiningClient {
 
                         seguirMinando = true;
                         new Thread(() -> minar(bloque, out)).start();
-
-                    } else if (msg != null && msg.startsWith("stop")) {
-                        seguirMinando = false;
-                        //TODO DESCONECTAR DEL SERVIDOR
                     }
                 }
             }
         } catch (IOException e) {
         }
     }
+
+    public void desconectarServidor() {
+        try {
+            seguirMinando = false;
+            if (socket != null && !socket.isClosed()) {
+                socket.close();
+            }
+
+        } catch (IOException e) {
+            System.err.println("Error al cerrar: " + e.getMessage());
+        }
+    }
+
 
     public void minar(String bloque, PrintWriter out) {
         long nonce = 0;
@@ -96,6 +102,9 @@ public class MiningClient {
             }
             nonce++;
         }
+        LogUtil.mostrarPrompt=false;
         LogUtil.logClients("Hilo de minería detenido.");
+        System.out.println("Conexión cerrada con el servidor.");
+
     }
 }
