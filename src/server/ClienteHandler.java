@@ -48,7 +48,7 @@ public class ClienteHandler implements Runnable {
                             String nonce = partes[1];
                             String hash = partes[2];
                             System.out.println("Nonce del cliente: " + nonce);
-                            servidor.enviarBroadcast(nonce, hash);
+                            servidor.procesarRespuestas(nonce, hash);
                         }
                     }
                     if (msg != null && msg.equalsIgnoreCase("disconnect")) {

@@ -101,10 +101,12 @@ public class MiningClient {
                 break;
             }
             nonce++;
-        }
-        LogUtil.mostrarPrompt=false;
-        LogUtil.logClients("Hilo de minería detenido.");
-        System.out.println("Conexión cerrada con el servidor.");
 
+            LogUtil.mostrarPrompt = false;
+            if (!seguirMinando) {
+                LogUtil.logClients("Hilo de minería detenido.");
+                System.out.println("Conexión cerrada con el servidor.");
+            }
+        }
     }
 }

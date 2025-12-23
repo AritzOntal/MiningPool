@@ -47,7 +47,7 @@ public class MiningServer {
     }
 
 
-    public void enviarBroadcast(String nonce, String hash) {
+    public synchronized void procesarRespuestas(String nonce, String hash) {
         String clienHash = verificarHash(bloque + nonce);
         System.out.println("Comprobando hash...");
         if (clienHash.startsWith("000000")) {
@@ -56,6 +56,14 @@ public class MiningServer {
                 cliente.enviarMensaje("stop");
             }
             LogUtil.logServerY("clientes detenidos");
+
+            //ACTUALIZAMOS PAQUETE PARA QUE EL ANTERIOR YA NO VALGA
+            this.bloque = generarPaqueteAleatorio(3);
+            System.out.println("Nuevo reto generado: " + this.bloque);
+
+            for (ClienteHandler cliente : clientes) {
+                cliente.enviarMensaje("new_request" + this.bloque);
+            }
         }
     }
 

@@ -17,11 +17,11 @@ public class LogUtil {
     }
 
     public static void logServerY(String mensaje) {
-        System.out.print("\r" + ANSI_YELLOW + mensaje + ANSI_RESET);
+        System.out.println("\r" + ANSI_YELLOW + mensaje + ANSI_RESET);
     }
 
     public static void logServerG(String mensaje) {
-        System.out.print("\r" + ANSI_GREEN + mensaje + ANSI_RESET);
+        System.out.println("\r" + ANSI_GREEN + mensaje + ANSI_RESET);
     }
 
 
