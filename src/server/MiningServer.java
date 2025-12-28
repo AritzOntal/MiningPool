@@ -41,8 +41,8 @@ public class MiningServer {
                     .append(":")
                     .append(String.format("%.2f", cantidad))
                     .append("|");
-        }
 
+        }
         return paquete.toString();
     }
 
@@ -51,19 +51,24 @@ public class MiningServer {
         String clienHash = verificarHash(bloque + nonce);
         System.out.println("Comprobando hash...");
         if (clienHash.startsWith("000000")) {
-            System.out.println("Hash correcto. Deteniendo clientes...");
+            LogUtil.logG("¡HASH VALIDADO! ");
+            System.out.println("Deteniendo clientes...");
             for (ClienteHandler cliente : clientes) {
                 cliente.enviarMensaje("stop");
             }
-            LogUtil.logServerY("clientes detenidos");
+            System.out.println();
+            System.out.println("Clientes detenidos.");
+            System.out.println();
 
             //ACTUALIZAMOS PAQUETE PARA QUE EL ANTERIOR YA NO VALGA
             this.bloque = generarPaqueteAleatorio(3);
-            System.out.println("Nuevo reto generado: " + this.bloque);
+            System.out.println("Nuevo reto generado: ");
+            LogUtil.logC(bloque);
 
             for (ClienteHandler cliente : clientes) {
                 cliente.enviarMensaje("new_request" + this.bloque);
             }
+            System.out.println("Esperando Nonce...");
         }
     }
 
@@ -73,7 +78,7 @@ public class MiningServer {
     }
 
     public void anadirALista(ClienteHandler h) {
-        LogUtil.logServerG("Cliente añadido a la lista");
+        LogUtil.logY("Cliente añadido a la lista");
         clientes.add(h);
     }
 
@@ -84,8 +89,9 @@ public class MiningServer {
 
 
     public void enviarTrabajoACliente(ClienteHandler cliente) {
+        System.out.println("Trabajo enviado a clientes.");
+        System.out.println("Esperando Nonce...");
         cliente.enviarMensaje("new_request" + bloque);
-        LogUtil.logServerY("Bloque enviado a nuevo cliente");
     }
 
 
@@ -98,6 +104,8 @@ public class MiningServer {
         int port = 6666;
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Servidor escuchando en el puerto: " + port);
+            System.out.println("Nuevo reto generado: ");
+            LogUtil.logC(bloque);
             System.out.println("Esperando cliente...");
 
             while (true) { //BUCLE INFINITO

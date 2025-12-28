@@ -9,20 +9,20 @@ public class LogUtil {
 
     public static boolean mostrarPrompt = true;
 
-    public static void logClients(String mensaje) {
-        System.out.println("\r" + ANSI_CYAN + "[SERVER] " + mensaje + ANSI_RESET);
-        if (mostrarPrompt) {
-            System.out.print(PROMPT);
-        }
+    public static void logC(String mensaje) {
+        System.out.println("\r" + ANSI_CYAN + mensaje + ANSI_RESET);
     }
 
-    public static void logServerY(String mensaje) {
+    public static void logY(String mensaje) {
         System.out.println("\r" + ANSI_YELLOW + mensaje + ANSI_RESET);
     }
 
-    public static void logServerG(String mensaje) {
-        System.out.println("\r" + ANSI_GREEN + mensaje + ANSI_RESET);
+    public static void logG(String mensaje) {
+        System.out.print("\r" + ANSI_GREEN + mensaje + ANSI_RESET);
     }
 
+    public static void setPrompt() {
+            System.out.print(PROMPT + ANSI_RESET);
+        }
+    }
 
-}

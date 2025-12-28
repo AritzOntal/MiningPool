@@ -9,10 +9,17 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MiningClient {
 
     private Socket socket;
+    //CREAMOS POOL DE THREADS PARA PONER UN TOPE DE HILOS FUNCIONANDO
+    private ExecutorService ejecutor = Executors.newFixedThreadPool(4);
+    //CREAMOS VARIABLE ATÓMICA PARA DETENER HILOS A MODO DE MUTEX (INMEDIATO)
+    private final AtomicBoolean seguirMinando = new AtomicBoolean(false);
 
     public static void main(String[] args) {
         String host = "localhost";
@@ -40,8 +47,6 @@ public class MiningClient {
     }
 
 
-    private volatile boolean seguirMinando = true;
-
     public void conectarServidor(String host, int port) {
         //ABRIMOS LE SOCKET Y LOS CANALES DE COMUNICACIÓN (POR EL SOCKET SOMOS CAPAZ DE ENVIAR AL HANDLER DEL SERVIDOR MENSAJES CLAVE).
         try (Socket socket = new Socket(host, port);
@@ -66,10 +71,18 @@ public class MiningClient {
                     if (msg != null && msg.startsWith("new_request")) {
                         String bloque = msg.replaceFirst("new_request", "");
 
-                        LogUtil.logClients("¡Tarea recibida!: " + bloque);
+                        LogUtil.logC("¡Tarea recibida!: " + bloque);
 
-                        seguirMinando = true;
-                        new Thread(() -> minar(bloque, out)).start();
+                        int numHilos = 4;
+                        seguirMinando.set(true);
+
+                        for (int i = 0; i < numHilos; i++) {
+                            long nonceInicial = i * 1000000000L;
+                            //CON EJECUTOR PONEMOS EN MARCHA CADA HILO
+                            ejecutor.execute(() -> minar(bloque, out, nonceInicial));
+                            System.out.println("Hilo " + i + " iniciado desde el nonce: " + nonceInicial);
+                        }
+                        LogUtil.setPrompt();
                     }
                 }
             }
@@ -79,7 +92,7 @@ public class MiningClient {
 
     public void desconectarServidor() {
         try {
-            seguirMinando = false;
+            seguirMinando.set(false);
             if (socket != null && !socket.isClosed()) {
                 socket.close();
             }
@@ -90,23 +103,21 @@ public class MiningClient {
     }
 
 
-    public void minar(String bloque, PrintWriter out) {
-        long nonce = 0;
-        while (seguirMinando) {
+    public void minar(String bloque, PrintWriter out, Long nonce) {
+        while (seguirMinando.get()) {
             String hash = Hasher.calculateMD5(bloque + nonce);
-
             if (hash.startsWith("000000")) {
-                LogUtil.logClients("¡HASH ENCONTRADA! NONCE: " + nonce);
-                out.println("sol;" + nonce + ";" + hash);
+                //COMPRUEBA QUE EL HILO ESTE EN TRUE PARA VERIFICAR QUE ALGUIEN NO LO HA SACADO ANTES
+                if (seguirMinando.compareAndSet(true, false)) {
+                    LogUtil.logG("¡HASH ENCONTRADA! NONCE: " + nonce);
+                    synchronized (out) {
+                        out.println("sol;" + nonce + ";" + hash);
+                    }
+                }
                 break;
             }
             nonce++;
-
-            LogUtil.mostrarPrompt = false;
-            if (!seguirMinando) {
-                LogUtil.logClients("Hilo de minería detenido.");
-                System.out.println("Conexión cerrada con el servidor.");
-            }
         }
+        System.out.println("Hilo de minería detenido.");
     }
 }
