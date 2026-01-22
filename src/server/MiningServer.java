@@ -73,7 +73,7 @@ public class MiningServer {
     }
 
     public String verificarHash(String bloqueWithNonce){
-        String hash = Hasher.calculateMD5(bloqueWithNonce);
+        String hash = Hasher.calculateSHA(bloqueWithNonce);
         return hash;
     }
 

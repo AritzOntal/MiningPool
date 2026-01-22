@@ -6,7 +6,7 @@ import java.security.NoSuchAlgorithmException;
 
 public class Hasher {
 
-    public static String calculateMD5 (String entrada) {
+    public static String calculateSHA(String entrada) {
 
         try {
             //OBLIGA HA CAPTAR EXCEPTION POR SI EL ALGORITMO QUE RECLAMO NO EXISTE.

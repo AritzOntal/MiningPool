@@ -30,7 +30,7 @@ public class MiningClient {
         System.out.println("Cliente inciado");
         System.out.println("¿Desea conectarse al servidor?(s/n)");
         if (sc.nextLine().equalsIgnoreCase("s")) {
-            //CREAMOS HILO A PARTE PARA NO PERDER EL MAIN
+            //CREAMOS HILO A PARTE PARA NO PERDER EL MAIN Y PODER SALIR
             Thread hiloConexion = new Thread(() -> {
                 miningClient.conectarServidor(host, port);
             });
@@ -44,7 +44,7 @@ public class MiningClient {
                 }
             }
         }
-    }
+}
 
 
     public void conectarServidor(String host, int port) {
@@ -105,9 +105,10 @@ public class MiningClient {
 
     public void minar(String bloque, PrintWriter out, Long nonce) {
         while (seguirMinando.get()) {
-            String hash = Hasher.calculateMD5(bloque + nonce);
+            String hash = Hasher.calculateSHA(bloque + nonce);
             if (hash.startsWith("000000")) {
-                //COMPRUEBA QUE EL HILO ESTE EN TRUE PARA VERIFICAR QUE ALGUIEN NO LO HA SACADO ANTES
+
+                //COMPRUEBA QUE EL HILO ESTE EN TRUE PARA VERIFICAR QUE ALGUIEN NO LO HA SACADO ANTES Y SI NO LO PONDRA FALSE 2 EN UNO
                 if (seguirMinando.compareAndSet(true, false)) {
                     LogUtil.logG("¡HASH ENCONTRADA! NONCE: " + nonce);
                     synchronized (out) {
